@@ -1,3 +1,7 @@
+import Sidebar from "./components/Sidebar"
+import Editor from "./components/Editor"
+import Split from "react-split"
+import {nanoid} from "nanoid"
 import logo from './logo.svg';
 import './App.css';
 
