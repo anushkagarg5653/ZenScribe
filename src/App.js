@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect, useState } from "react"
 import Sidebar from "./components/Sidebar"
 import Editor from "./components/Editor"
 import Split from "react-split"
@@ -7,11 +7,17 @@ import "./App.css"
 
 export default function App() {
 
-    const [notes, setNotes] = React.useState([])
+    const [notes, setNotes] = useState(() => JSON.parse(localStorage.getItem("notes")) || []) // to access the notes we again change it back to js array
+     //lazy initialization with arrow function so that it runs only once
+
     const [currentNoteId, setCurrentNoteId] = React.useState(
         (notes[0] && notes[0].id) || ""
     )
     
+    useEffect(() => {
+        localStorage.setItem("notes", JSON.stringify(notes)) // to save in localStorage we covert it into string
+    },[notes])
+
     function createNewNote() {
         const newNote = {
             id: nanoid(),
