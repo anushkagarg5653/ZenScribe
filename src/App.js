@@ -7,7 +7,7 @@ import "./App.css"
 
 export default function App() {
 
-    const [notes, setNotes] = useState(() => JSON.parse(localStorage.getItem("notes")) || []) // to access the notes we again change it back to js array
+    const [notes, setNotes] = useState(() => JSON.parse(localStorage.getItem("notes")) && console.log("Get run")  || []) // to access the notes we again change it back to js array
      //lazy initialization with arrow function so that it runs only once
 
     const [currentNoteId, setCurrentNoteId] = React.useState(
@@ -15,6 +15,7 @@ export default function App() {
     )
     
     useEffect(() => {
+        console.log("set run") 
         localStorage.setItem("notes", JSON.stringify(notes)) // to save in localStorage we covert it into string
     },[notes])
 
