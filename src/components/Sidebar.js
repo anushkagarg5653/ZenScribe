@@ -11,6 +11,10 @@ export default function Sidebar(props) {
                 onClick={() => props.setCurrentNoteId(note.id)}
             >
                 <h4 className="text-snippet"> {note.body.split("/n")[0]} </h4>
+                <button 
+                    className="delete-btn"
+                    onClick={(event) => props.deleteNote(event, note.id)}
+                ><i className="gg-trash trash-icon"></i></button>
             </div>
         </div>
     ))
@@ -25,3 +29,8 @@ export default function Sidebar(props) {
         </section>
     )
 }
+
+//  whatever function we pass to eventHandler will
+// revceive the event as its parameter and in order 
+// to pass something else along with that we can call it
+// as anonymous function
