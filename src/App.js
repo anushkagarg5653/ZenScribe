@@ -3,7 +3,7 @@ import Sidebar from "./components/Sidebar"
 import Editor from "./components/Editor"
 import Split from "react-split"
 import {nanoid} from "nanoid"
-import { onSnapshot, addDoc, doc, deleteDoc } from "firebase/firestore"
+import { onSnapshot, addDoc, doc, deleteDoc, setDoc } from "firebase/firestore"
 import {notesCollection, db} from "./firebase"
 import "./App.css"
 
@@ -16,16 +16,20 @@ export default function App() {
      //lazy initialization with arrow function so that it runs only once
 
     const [currentNoteId, setCurrentNoteId] = React.useState(
-        (notes[0]?.id) || ""
+        // (notes[0]?.id) || 
+        ""
     )
+    const [tempNoteText, setTempNoteText] = useState('')
+
     const currentNote = 
         notes.find(note => note.id === currentNoteId) 
         || notes[0]
 
+    const sortedNotes  = notes.sort((a,b) => b.updateAt - a.updateAt)
+
     useEffect(() => {
 
         //LOCAL STORAGE CODE
-
         //     localStorage.setItem("notes", JSON.stringify(notes)) // to save in localStorage we covert it into string
         // },[notes]
 
@@ -40,6 +44,29 @@ export default function App() {
     return unsubscribe
     }, [])
 
+    useEffect(() => {
+        if(!currentNoteId){
+            setCurrentNoteId(notes[0]?.id)
+        }
+    }, [notes])
+
+    useEffect(() => {
+        if(currentNote){
+            setTempNoteText(currentNote.body)
+        }
+    }, [currentNote])
+
+    // Debouncing logic
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            if(tempNoteText !== currentNote.body){
+                 updateNote(tempNoteText)
+            }
+        },500)
+        return () => clearTimeout(timeoutId)
+    }, [tempNoteText])
+
+    //LOCAL STORAGE CODE
     // function createNewNote() {
     //     const newNote = {
     //         id: nanoid(),
@@ -49,30 +76,42 @@ export default function App() {
     //     setCurrentNoteId(newNote.id)
     // }
 
+    // FIREBASE CODE
     async function createNewNote() {
         const newNote = {
-            body : "# type your markdown note's title here"
+            body : "# type your markdown note's title here",
+            createdAt : new Date(),
+            updateAt : new Date()
         }
         const newNoteRef = await addDoc(notesCollection, newNote);
         setCurrentNoteId(newNoteRef.id); 
     }
     
-    function updateNote(text) {
-        setNotes(oldNotes => {
-            const newNote = [];
-            for(let i =0; i<oldNotes.length; i++) {
-                const oldNote = oldNotes[i];
-                if(oldNote.id === currentNoteId){
-                    newNote.unshift({...oldNote, body:text });
-                }
-                else{
-                    newNote.push(oldNote);
-                }
-            }
-            return newNote;
-        })
-    }
+    //LOCAL STORAGE CODE
+
+    // function updateNote(text) {
+    //  
+    //     setNotes(oldNotes => {
+    //         const newNote = [];
+    //         for(let i =0; i<oldNotes.length; i++) {
+    //             const oldNote = oldNotes[i];
+    //             if(oldNote.id === currentNoteId){
+    //                 newNote.unshift({...oldNote, body:text });
+    //             }
+    //             else{
+    //                 newNote.push(oldNote);
+    //             }
+    //         }
+    //         return newNote;
+    //     })
+    // }
     
+    // FIRESTORE CODE
+    async function updateNote(text){
+        const docRef = doc(db, "zenscribe", currentNoteId);
+        await setDoc(docRef, {body : text, updateAt: Date.now()}, {merge : true})
+    }
+
      //LOCAL STORAGE CODE
 
     // function deleteNote(event, noteId) {
@@ -98,20 +137,23 @@ export default function App() {
                 className="split"
             >
                 <Sidebar
-                    notes={notes}
+                    // notes={notes}
+                    notes = {sortedNotes}
                     currentNote={currentNote}
                     setCurrentNoteId={setCurrentNoteId}
                     newNote={createNewNote}
                     deleteNote = {deleteNote}
                 />
-                {
+                {/* {
                     currentNoteId && 
-                    notes.length > 0 &&
+                    notes.length > 0 && */}
                     <Editor 
-                        currentNote={currentNote} 
-                        updateNote={updateNote} 
+                        // currentNote={currentNote} 
+                       // updateNote={updateNote}  
+                       tempNoteText = {tempNoteText}
+                        setTempNoteText = {setTempNoteText}
                     />
-                }
+                {/* } */}
             </Split>
             :
             <div className="no-notes">
